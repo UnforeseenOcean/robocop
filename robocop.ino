@@ -1,9 +1,9 @@
-#include <Servo.h> 
+#include <Servo.h>
 
 Servo leftArm[2];
 Servo rightArm[2];
-int leftPos[2];
-int rightPos[2];
+
+Servo arms[4];
 
 int leftFootPin = 0;
 int rightFootPin = 1;
@@ -11,57 +11,78 @@ int rightFootPin = 1;
 int leftFoot = 0;
 int rightFoot = 0;
 
+const int WAITING = 0;
+const int FRISKING = 1;
+
+int state = WAITING;
+
 void setup(){
   Serial.begin(9600);
 
-  leftArm[0].attach(9);
-  leftArm[1].attach(10);
-  for (int i=0; i < 2; i++) {
-    leftArm[i].write(0);
-    //rightArm[i].write(0);
+  leftArm[0].attach(5);
+  leftArm[1].attach(6);
+
+  rightArm[0].attach(9);
+  rightArm[1].attach(10);
+
+  arms[0] = leftArm[0];
+  arms[1] = leftArm[1];
+  arms[2] = rightArm[0];
+  arms[3] = rightArm[1];
+
+  for (int i=0; i < 4; i++) {
+    arms[i].write(0);
   }
 } 
 
 
 void loop() {
-
   leftFoot = analogRead(leftFootPin);
   rightFoot = analogRead(rightFootPin);
-
   //printAnalog();
 
-  moveArms();
-  delay(1000);
-  resetArms();
-  delay(1000);
+  if (leftFoot > 80 && state == WAITING) {
+    moveArms();
+    resetArms();
+  }
+
 } 
 
 void moveArms() {
   friskMotion(leftArm, 0, 100);
+  friskMotion(rightArm, 0, 100);
 
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 1; i++) {
     randomSeed(analogRead(5));
     int height = random(105, 130);
     friskMotion(leftArm, 20, height);
-    friskMotion(leftArm, 0, height);    
+    friskMotion(leftArm, 0, height);
+    randomSeed(analogRead(5));
+    height = random(105, 130);
+    friskMotion(rightArm, 20, height);
+    friskMotion(rightArm, 0, height);    
+    
   }
 
   friskMotion(leftArm, 0, 100);
+  friskMotion(rightArm, 0, 100);
+
 }
 
 //arm[0] should be the bottom servo, controlling distance of hand from butt
 //arm[1] should be top servo, controlling the height of hand
-void friskMotion(Servo arm[], int handDistance, int handHeight) {
-  arm[1].write(handHeight);
+void friskMotion(Servo a[], int handDistance, int handHeight) {
+  a[1].write(handHeight);
   delay(200);
-  arm[0].write(handDistance);
+  a[0].write(handDistance);
   delay(200);
-
 }
 
 void resetArms(){
-  leftArm[0].write(0);
-  leftArm[1].write(0);
+  for (int i = 0; i < 4; i++) {
+    arms[i].write(0);
+  }
+  state = WAITING;
 }
 
 void printAnalog(){
@@ -71,7 +92,3 @@ void printAnalog(){
   Serial.println(rightFoot);
   delay(1); 
 }
-
-
-
-
