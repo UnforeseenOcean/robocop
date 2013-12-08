@@ -90,7 +90,9 @@ void loop() {
 
 /////////IS SOMEONE HERE?///////////////////
 boolean feet() {
-  return (leftFoot > 80 && rightFoot > 80);
+  return (leftFoot > 80);
+  
+  //return (leftFoot > 80 && rightFoot > 80);
 }
 
 /////////SERVO STUFFFF///////////////////
@@ -137,7 +139,7 @@ void frisk() {
 void friskWithDelay() {
   for (int i = 0; i < 6; i++) {
     if (i == 0 || i == 3) {
-      timing[i][2] = random(105, 130);
+      timing[i][2] = 30;//random(105, 130);
     }
     delay(handInterval);
     arms[timing[i][1]].write(timing[i][2]);
@@ -156,17 +158,17 @@ void setTiming(){
   timing[0][2] = random(105, 130);
 
   timing[1][1] = LEFT_DISTANCE;
-  timing[1][2] = 80;
+  timing[1][2] = 20;
 
   timing[2][1] = LEFT_DISTANCE;
-  timing[2][2] = 20;
+  timing[2][2] = 100;
 
   //right arm
   timing[3][1] = RIGHT_HEIGHT;
   timing[3][2] = random(10, 35);
 
   timing[4][1] = RIGHT_DISTANCE;
-  timing[4][2] = 60;
+  timing[4][2] = 40;
 
   timing[5][1] = RIGHT_DISTANCE;
   timing[5][2] = 120;
