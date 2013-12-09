@@ -20,53 +20,57 @@ boolean playingFile = false;
 void setup(){
   Wire.begin(4); 
   Wire.onReceive(receiveEvent);
-  
-  Serial.begin(9600);
 
+  Serial.begin(9600);
+  randomSeed(analogRead(A0));
   setupAudio();
 } 
 
 
 void loop() {
   //inByte = Serial.read();
-
 }
 
 void receiveEvent(int howMany)
 {
   int x = Wire.read();    // receive byte as an integer
   Serial.println(x);         // print the integer
+
   if (x == 1) {
-   playaudio(); 
+    playIntro(); 
   }
+
   if (x == 0) {
-    stopaudio();
+    stopAudio();
   }
-  
+
   if (x == 2) {
-    playaudio2();
+    playMain();
   }
 }
 
 
 /////////AUDIO STUFFFF///////////////////
 
-void playaudio(){
-  if (playingFile == false) {
-    playingFile = true;
-    playfile("TEST.wav");
-  }
+void playIntro(){
+  String f = String(random(1, 4)) + "intro.wav";
+  char charBuf[50];
+  f.toCharArray(charBuf, 50);
+  playfile(charBuf);
 }
 
-void playaudio2(){
-  playfile("ALARM.wav");
+void playMain(){
+  String f = String(random(1, 27)) + ".wav";
+  char charBuf[50];
+  f.toCharArray(charBuf, 50);
+  playfile(charBuf);
 }
 
-void stopaudio() {
-  if (wave.isplaying) {
-    wave.stop();
-  }
-  playingFile = false;
+void stopAudio() {
+  String f = String(random(1, 3)) + "free.wav";
+  char charBuf[50];
+  f.toCharArray(charBuf, 50);
+  playfile(charBuf);
 }
 
 //============================== playcomplete() =============================
@@ -86,7 +90,7 @@ void playfile(char *name) {
   if (wave.isplaying) {// already playing something, so stop it!
     wave.stop(); // stop it
   } 
-  
+
   // look in the root directory and open the file
   if (!f.open(root, name)) {
     putstring("Couldn't open file "); 
@@ -124,10 +128,10 @@ int freeRam(void){
 //============================== sdErrorCheck() =============================
 void sdErrorCheck(void){
   if (!card.errorCode()) return;
-  //  putstring("\n\rSD I/O error: ");
-  //  Serial.print(card.errorCode(), HEX);
-  //  putstring(", ");
-  //  Serial.println(card.errorData(), HEX);
+    putstring("\n\rSD I/O error: ");
+    Serial.print(card.errorCode(), HEX);
+    putstring(", ");
+    Serial.println(card.errorData(), HEX);
   while(1);
 }
 
@@ -182,6 +186,7 @@ void setupAudio() {
   } 
 
 }
+
 
 
 

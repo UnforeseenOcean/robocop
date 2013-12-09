@@ -27,7 +27,9 @@ const int RIGHT_HEIGHT = 3;
 unsigned long currentTime;
 unsigned long startTime;
 unsigned long timing[6][3];
-int audioLength = 12000;
+unsigned long lastPlayedAudio;
+int audioInterval = 4000;
+int audioLength = audioInterval * 4 + 1000;
 int handInterval = 100;
 
 
@@ -42,7 +44,9 @@ void setup(){
 
   //set arms to zero and then detach them
   attachArms();
+  delay(500);
   resetArms();
+  randomSeed(analogRead(2));
   //detachArms();
 } 
 
@@ -52,14 +56,14 @@ void loop() {
 
   leftFoot = analogRead(leftFootPin);
   rightFoot = analogRead(rightFootPin);
-  printAnalog();
+  //printAnalog();
 
   if (feet() && state == WAITING) {
     startTime = currentTime;
     //attachArms();
     resetArms();
     setTiming();
-    playaudio();
+    playIntro();
     //delay(1000);
     state = FRISKING;
     //Serial.println("STARTING");
@@ -67,16 +71,17 @@ void loop() {
 
   if ((!feet() || startTime + audioLength < currentTime) && state == FRISKING) {
     state = WAITING;
-    stopaudio();
+    stopAudio();
     resetArms();
-    delay(5000);
+    delay(1000);
     //detachArms();
     //Serial.println("STOPPING");
   }
 
   if (state == FRISKING) {
     //Serial.println("FRISKING");
-    frisk(); 
+    frisk();
+    playMain();
   }
 
   //for debugging
@@ -90,9 +95,8 @@ void loop() {
 
 /////////IS SOMEONE HERE?///////////////////
 boolean feet() {
-  return (leftFoot > 80);
-  
-  //return (leftFoot > 80 && rightFoot > 80);
+  //return (leftFoot > 80); 
+  return (leftFoot > 80 && rightFoot > 80);
 }
 
 /////////SERVO STUFFFF///////////////////
@@ -139,7 +143,7 @@ void frisk() {
 void friskWithDelay() {
   for (int i = 0; i < 6; i++) {
     if (i == 0 || i == 3) {
-      timing[i][2] = 30;//random(105, 130);
+      timing[i][2] = random(105, 130);
     }
     delay(handInterval);
     arms[timing[i][1]].write(timing[i][2]);
@@ -161,40 +165,44 @@ void setTiming(){
   timing[1][2] = 20;
 
   timing[2][1] = LEFT_DISTANCE;
-  timing[2][2] = 100;
+  timing[2][2] = 60;
 
   //right arm
   timing[3][1] = RIGHT_HEIGHT;
   timing[3][2] = random(10, 35);
 
   timing[4][1] = RIGHT_DISTANCE;
-  timing[4][2] = 40;
+  timing[4][2] = 120;
 
   timing[5][1] = RIGHT_DISTANCE;
-  timing[5][2] = 120;
+  timing[5][2] = 80;
 }
 
 
 
 /////////AUDIO STUFFFF///////////////////
 
-void playaudio(){
-  if (playingFile == false) {
-    Wire.beginTransmission(4); 
-    Wire.write(1);
-    Wire.endTransmission(); 
+void playIntro(){
+  lastPlayedAudio = currentTime;
+  sendAudio(1);
+}
+
+void playMain() {
+  if (lastPlayedAudio + audioInterval < currentTime) {
+    lastPlayedAudio = currentTime;
+    sendAudio(2);
   }
 }
 
-void playaudio2() {
-
+void stopAudio() {
+  sendAudio(0);
+  playingFile = false;
 }
 
-void stopaudio() {
+void sendAudio(int signal) {
   Wire.beginTransmission(4); 
-  Wire.write(0);
-  Wire.endTransmission(); 
-  playingFile = false;
+  Wire.write(signal);
+  Wire.endTransmission();  
 }
 
 
